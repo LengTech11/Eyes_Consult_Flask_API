@@ -15,7 +15,7 @@ def remove_prefix(state_dict, prefix):
     return {key[len(prefix):]: value for key, value in state_dict.items() if key.startswith(prefix)}
 
 # Load the state dictionary
-state_dict = torch.load('vgg16_model(v6).pth', map_location=torch.device('cpu'))
+state_dict = torch.load('vgg16_model_resize(v2).pth', map_location=torch.device('cpu'))
 state_dict = remove_prefix(state_dict, 'base_model.')
 
 # Load the model
@@ -31,7 +31,7 @@ model.eval()
 
 # Define image transformations
 preprocess = transforms.Compose([
-    transforms.Resize(256),
+    transforms.Resize(224),
     transforms.CenterCrop(224),
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
@@ -43,12 +43,48 @@ def transform_image(image_bytes):
 
 class_names = ['diabetic_retinopathy', 'normal', 'cataract']
 
+# def get_prediction(image_bytes):
+#     tensor = transform_image(image_bytes)
+#     outputs = model(tensor)
+#     probabilities = torch.nn.functional.softmax(outputs, dim=1)
+#     confidence, y_hat = probabilities.max(1)
+#     return class_names[y_hat.item()], confidence.item()
+
 def get_prediction(image_bytes):
     tensor = transform_image(image_bytes)
     outputs = model(tensor)
     probabilities = torch.nn.functional.softmax(outputs, dim=1)
     confidence, y_hat = probabilities.max(1)
-    return class_names[y_hat.item()], confidence.item()
+    return class_names[y_hat.item()], confidence.item(), probabilities[0].tolist()
+
+
+# @app.route('/predict', methods=['POST'])
+# def predict():
+#     if request.method == 'POST':
+#         if 'file' not in request.files:
+#             return jsonify({'error': 'no file'})
+#         file = request.files['file']
+#         if file.filename == '':
+#             return jsonify({'error': 'no file'})
+#         try:
+#             img_bytes = file.read()
+#             prediction, confidence = get_prediction(img_bytes)
+            
+#             # Set a threshold for prediction confidence
+#             confidence_threshold = 0.5
+
+#             if confidence <= confidence_threshold:
+#                 result = {'Image': file.filename, 'Predicted Class': 'Unknown', 'Confidence': confidence}
+#             else:
+#                 result = {'Image': file.filename, 'Predicted Class': prediction, 'Confidence': confidence}
+            
+#             # Print the result to console
+#             print(f"Prediction for {file.filename}: {result['Predicted Class']} with Confidence: {result['Confidence']}")
+            
+#             # Return the result as JSON response
+#             return jsonify(result)
+#         except Exception as e:
+#             return jsonify({'error': str(e)})
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -60,15 +96,25 @@ def predict():
             return jsonify({'error': 'no file'})
         try:
             img_bytes = file.read()
-            prediction, confidence = get_prediction(img_bytes)
+            prediction, confidence, probabilities = get_prediction(img_bytes)
             
             # Set a threshold for prediction confidence
-            confidence_threshold = 0.7
+            confidence_threshold = 0.5
 
             if confidence <= confidence_threshold:
-                result = {'Image': file.filename, 'Predicted Class': 'Unknown', 'Confidence': confidence}
+                result = {
+                    'Image': file.filename,
+                    'Predicted Class': 'Unknown',
+                    'Confidence': confidence,
+                    'Class Probabilities': dict(zip(class_names, probabilities))
+                }
             else:
-                result = {'Image': file.filename, 'Predicted Class': prediction, 'Confidence': confidence}
+                result = {
+                    'Image': file.filename,
+                    'Predicted Class': prediction,
+                    'Confidence': confidence,
+                    'Class Probabilities': dict(zip(class_names, probabilities))
+                }
             
             # Print the result to console
             print(f"Prediction for {file.filename}: {result['Predicted Class']} with Confidence: {result['Confidence']}")
@@ -77,6 +123,7 @@ def predict():
             return jsonify(result)
         except Exception as e:
             return jsonify({'error': str(e)})
+
 
 
 @app.route('/')
