@@ -57,35 +57,6 @@ def get_prediction(image_bytes):
     confidence, y_hat = probabilities.max(1)
     return class_names[y_hat.item()], confidence.item(), probabilities[0].tolist()
 
-
-# @app.route('/predict', methods=['POST'])
-# def predict():
-#     if request.method == 'POST':
-#         if 'file' not in request.files:
-#             return jsonify({'error': 'no file'})
-#         file = request.files['file']
-#         if file.filename == '':
-#             return jsonify({'error': 'no file'})
-#         try:
-#             img_bytes = file.read()
-#             prediction, confidence = get_prediction(img_bytes)
-            
-#             # Set a threshold for prediction confidence
-#             confidence_threshold = 0.5
-
-#             if confidence <= confidence_threshold:
-#                 result = {'Image': file.filename, 'Predicted Class': 'Unknown', 'Confidence': confidence}
-#             else:
-#                 result = {'Image': file.filename, 'Predicted Class': prediction, 'Confidence': confidence}
-            
-#             # Print the result to console
-#             print(f"Prediction for {file.filename}: {result['Predicted Class']} with Confidence: {result['Confidence']}")
-            
-#             # Return the result as JSON response
-#             return jsonify(result)
-#         except Exception as e:
-#             return jsonify({'error': str(e)})
-
 @app.route('/predict', methods=['POST'])
 def predict():
     if request.method == 'POST':
