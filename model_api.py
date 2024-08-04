@@ -43,13 +43,6 @@ def transform_image(image_bytes):
 
 class_names = ['diabetic_retinopathy', 'normal', 'cataract']
 
-# def get_prediction(image_bytes):
-#     tensor = transform_image(image_bytes)
-#     outputs = model(tensor)
-#     probabilities = torch.nn.functional.softmax(outputs, dim=1)
-#     confidence, y_hat = probabilities.max(1)
-#     return class_names[y_hat.item()], confidence.item()
-
 def get_prediction(image_bytes):
     tensor = transform_image(image_bytes)
     outputs = model(tensor)
@@ -70,7 +63,7 @@ def predict():
             prediction, confidence, probabilities = get_prediction(img_bytes)
             
             # Set a threshold for prediction confidence
-            confidence_threshold = 0.5
+            confidence_threshold = 0.6
 
             if confidence <= confidence_threshold:
                 result = {
