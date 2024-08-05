@@ -85,7 +85,7 @@ def predict():
             img_bytes = file.read()
             eye_prediction, eye_confidence, eye_probabilities = get_eye_prediction(img_bytes)
 
-            if eye_prediction == 'no_eye':
+            if eye_prediction == 'no_eye' and eye_confidence < 0.7:
                 # If predicted 'no_eye', return a direct response
                 result = {
                     'Image': file.filename,
@@ -98,7 +98,7 @@ def predict():
                 # If predicted 'eye', use VGG model for further prediction
                 prediction, confidence, probabilities = get_vgg_prediction(img_bytes)
                 
-                confidence_threshold = 0.6
+                confidence_threshold = 0.7
                 if confidence <= confidence_threshold:
                     result = {
                         'Image': file.filename,
