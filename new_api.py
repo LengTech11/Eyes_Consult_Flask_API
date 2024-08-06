@@ -52,7 +52,11 @@ def transform_image(image_bytes):
 
 # Define class names for the VGG model and EyeOrNotModel
 vgg_class_names = ['diabetic_retinopathy', 'normal', 'glaucoma','cataract']
-eye_class_names = ['no_eye', 'eye']
+# eye_class_names = ['not_eye', 'eye']
+eye_class_names = {
+    0: 'not_eye',
+    1: 'eye'
+}
 
 def get_vgg_prediction(image_bytes):
     tensor = transform_image(image_bytes)
@@ -85,7 +89,7 @@ def predict():
             img_bytes = file.read()
             eye_prediction, eye_confidence, eye_probabilities = get_eye_prediction(img_bytes)
 
-            if eye_prediction == 'no_eye' and eye_confidence < 0.7:
+            if eye_prediction == 'not_eye':
                 # If predicted 'no_eye', return a direct response
                 result = {
                     'Image': file.filename,
@@ -98,7 +102,7 @@ def predict():
                 # If predicted 'eye', use VGG model for further prediction
                 prediction, confidence, probabilities = get_vgg_prediction(img_bytes)
                 
-                confidence_threshold = 0.7
+                confidence_threshold = 0.6
                 if confidence <= confidence_threshold:
                     result = {
                         'Image': file.filename,
