@@ -52,11 +52,11 @@ def transform_image(image_bytes):
 
 # Define class names for the VGG model and EyeOrNotModel
 vgg_class_names = ['diabetic_retinopathy', 'normal', 'glaucoma','cataract']
-# eye_class_names = ['not_eye', 'eye']
-eye_class_names = {
-    0: 'not_eye',
-    1: 'eye'
-}
+eye_class_names = ['not_eye', 'eye']
+# eye_class_names = {
+#     0: 'not_eye',
+#     1: 'eye'
+# }
 
 def get_vgg_prediction(image_bytes):
     tensor = transform_image(image_bytes)
